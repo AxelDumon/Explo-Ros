@@ -1,0 +1,9 @@
+{
+    "dbName": "v2grid",
+    "adminUser": {
+        "user": "admin",
+        "password": "password"
+    },
+    "serverUrl": "http://134.206.153.88:5984",
+    "nameOfAgent": "agent01"
+}

@@ -1,0 +1,21 @@
+{
+  "name": "explo-ros",
+  "version": "1.0.0",
+  "main": "app.js",
+  "type": "module",
+  "resolveJsonModule": true,
+  "esModuleInterop": true,
+  "scripts": {
+    "start": "node build/app.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "rclnodejs": "^1.7.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.2",
+    "typescript": "5.4"
+  }
+}

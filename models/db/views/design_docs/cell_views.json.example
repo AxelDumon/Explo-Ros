@@ -1,0 +1,14 @@
+{
+    "_id": "_design/cell_views",
+    "views": {
+        "count_by_agent": {
+            "map": "function (doc) { if (doc.type === 'cell' && doc.agents.length > 0) emit(doc.agents, doc); }"
+        },
+        "by_cells": {
+            "map": "function (doc) { if (doc.type === 'cell' ) { emit(doc._id, doc); } }"
+        },
+        "by_discovered_cells": {
+            "map": "function (doc) { if (doc.type === 'cell' && doc.valeur > 0) { emit(null, doc.valeur); } }"
+        }
+    }
+}

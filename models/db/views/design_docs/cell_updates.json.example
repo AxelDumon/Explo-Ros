@@ -1,0 +1,7 @@
+{
+    "_id": "_design/cell_updates",
+    "updates": {
+        "reserve_cell": "function(doc, req) { try { var body = req.body ? JSON.parse(req.body) : {}; } catch(e) { return [null, JSON.stringify({ error: 'invalid json' })]; } var agent = body.agent || null; if (!doc) { doc = { _id: req.id, valeur: 1, agents: agent ? [agent] : [], type: 'cell' }; return [doc, JSON.stringify({ message: 'Cell created and reserved', doc: doc })]; } doc.type = doc.type || 'cell'; doc.valeur = doc.valeur || 0; doc.agents = doc.agents || []; if (agent && doc.agents.indexOf(agent) === -1) { doc.agents.push(agent); } if (doc.valeur === 0) { doc.valeur = 1; return [doc, JSON.stringify({ message: 'Cell reserved', doc: doc })]; } else { return [doc, JSON.stringify({ message: 'Cell already reserved', doc: doc })]; } }",
+        "reserve_cell_atomic_full": "function(doc, req) {var body = JSON.parse(req.body);if (!doc) {doc = { _id: req.id, valeur: 0, agents: [] };}doc.valeur = doc.valeur || 0;doc.agents = doc.agents || [];if (body.agent && doc.agents.indexOf(body.agent) === -1) {doc.agents.push(body.agent);}if (doc.valeur === 0) {doc.valeur = 1;return [doc, JSON.stringify({ message: 'Cell reserved', doc: doc })];} else {return [doc, JSON.stringify({ message: 'Cell already reserved', doc: doc })];}}"
+    }
+}

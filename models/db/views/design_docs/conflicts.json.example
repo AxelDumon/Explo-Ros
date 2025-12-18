@@ -1,0 +1,11 @@
+{
+    "_id": "_design/conflicts",
+    "views": {
+        "by_conflicting_cells": {
+            "map": "function (doc) { if (doc.type == 'cell' && doc._conflicts) emit(doc._id, { current: doc, conflicts: doc._conflicts }); }"
+        }
+    },
+    "filters": {
+        "conflicting_cells": "function (doc, req) { return doc.type == 'cell' && doc._conflicts; }"
+    }
+}

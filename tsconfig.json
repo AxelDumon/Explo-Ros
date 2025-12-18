@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "target": "ES2020",
+    "lib": ["ES2020", "dom", "dom.iterable"],
+    "skipLibCheck": true,
+    "outDir": "build",
+    // "allowImportingTsExtensions": true,
+    // "noEmit": true,
+    // "rewriteRelativeImportExtensions": true,
+    "isolatedModules": true,
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    // "noUncheckedSideEffectImports": true
+  },
+  "include": ["models/**/*", "app.ts", "models/db/views/**/*.json"],
+  "exclude": ["node_modules", "build"]
+}
