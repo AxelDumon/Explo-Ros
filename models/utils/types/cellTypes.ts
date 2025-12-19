@@ -13,29 +13,36 @@ export type Cell = {
 };
 
 export type MapUpdate = {
-    cells: Cell[]
-}
+  cells: Cell[];
+  meta?: {
+    source: string;
+    created_at: string;
+  };
+};
 
-export type CellDocument = Document &  { type: "cell", value: number };
-
+export type CellDocument = Document & {
+  type: "cell";
+  value: number;
+  meta?: { source: string; created_at: string };
+};
 ////////////////// Functions ////////////////////
 
 //// Type guards
 
 export function isMapUpdate(obj: any): obj is MapUpdate {
-    return (
-        obj != null &&
-        Array.isArray(obj.cells) &&
-        obj.cells.every((cell : any) => isCell(cell))
-    );
+  return (
+    obj != null &&
+    Array.isArray(obj.cells) &&
+    obj.cells.every((cell: any) => isCell(cell))
+  );
 }
 
 export function isCell(obj: any): obj is Cell {
   return (
     obj != null &&
-    (typeof obj.x).toLowerCase() === 'number' &&
-    (typeof obj.y).toLowerCase() === 'number' &&
-    (typeof obj.value).toLowerCase() === 'number'
+    (typeof obj.x).toLowerCase() === "number" &&
+    (typeof obj.y).toLowerCase() === "number" &&
+    (typeof obj.value).toLowerCase() === "number"
   );
 }
 

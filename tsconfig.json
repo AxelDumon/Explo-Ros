@@ -20,6 +20,6 @@
     "noFallthroughCasesInSwitch": true,
     // "noUncheckedSideEffectImports": true
   },
-  "include": ["models/**/*", "app.ts", "models/db/views/**/*.json"],
-  "exclude": ["node_modules", "build"]
+  "include": ["models/**/*", "app.ts", "models/db/*.json", "models/db/views/design_docs"],
+  "exclude": ["node_modules", "build", "models/db/views/design_docs/*.json"]
 }

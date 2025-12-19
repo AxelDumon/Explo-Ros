@@ -9,7 +9,8 @@ export type Agent = {
   y: number;
 };
 
-export type AgentDocument = Document & Agent & { type: "agent" };
+export type AgentDocument = Document &
+  Agent & { type: "agent"; meta?: { source: string; created_at: string } };
 
 /////////////// Functions ////////////////////
 

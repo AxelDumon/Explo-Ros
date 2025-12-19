@@ -52,31 +52,34 @@ export class CouchChangeListener {
 
         this.backoffTime = CouchChangeListener.defaultBackoffTime;
 
+        let buffer = "";
         for await (const chunk of response.body as any) {
-          const line = chunk.toString().trim();
-          if (!line) continue;
+          const text = this.normalizeChunk(chunk);
+          buffer += text;
 
-          let change;
-          try {
-            change = JSON.parse(line);
-          } catch (e) {
-            console.error(
-              "[CouchChangeListener] Failed to parse change line:",
-              line,
-              e
-            );
-            continue;
-          }
+          let nl: number;
+          while ((nl = buffer.indexOf("\n")) >= 0) {
+            const line = buffer.slice(0, nl).trim();
+            buffer = buffer.slice(nl + 1);
+            if (!line) continue;
 
-          if (change && change.seq) {
-            this.since = change.seq;
+            try {
+              const change = JSON.parse(line);
+              if (change && change.seq) {
+                this.since = change.seq;
+              }
+              if (!change.doc || !change.doc.meta) continue;
+              this.onChange(change);
+            } catch (e) {
+              console.error(
+                "[CouchChangeListener] Failed to parse change line:",
+                line,
+                e
+              );
+              continue;
+            }
           }
-          this.onChange(change);
         }
-
-        console.warn(
-          "[CouchChangeListener] Stream ended unexpectedly, reconnecting..."
-        );
       } catch (error) {
         if (!this.running) break;
         console.error("[CouchChangeListener] Error in change listener:", error);
@@ -93,5 +96,12 @@ export class CouchChangeListener {
     this.running = false;
     this.controller.abort();
     console.log("[CouchChangeListener] Listener stopped.");
+  }
+
+  private normalizeChunk(chunk: any): string {
+    if (typeof chunk === "string") return chunk;
+    if (chunk instanceof Buffer) return chunk.toString("utf8");
+    if (chunk instanceof Uint8Array) return Buffer.from(chunk).toString("utf8");
+    return String(chunk);
   }
 }

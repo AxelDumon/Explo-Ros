@@ -1,13 +1,33 @@
 /////////////////// Types ////////////////////
+// export type ReplicationDocument = {
+//   _id?: string;
+//   source: string;
+//   target: string;
+//   continuous: boolean;
+//   create_target: boolean;
+//   selector?: object;
+//   transforms?: object;
+//   filter?: string;
+// };
+
 export type ReplicationDocument = {
-  _id?: string;
-  source: string;
-  target: string;
-  continuous: boolean;
-  create_target: boolean;
+  _id: string;
+  source: string | {
+    url: string;
+    headers?: Record<string, string>;
+  };
+  target: string | {
+    url: string;
+    headers?: Record<string, string>;
+  };
+  continuous?: boolean;
+  create_target?: boolean;
   selector?: object;
-  transforms?: object;
   filter?: string;
+  user_ctx?: {
+    name: string;
+    roles: string[];
+  };
 };
 
 ///////////////// Functions ////////////////////
@@ -18,10 +38,27 @@ export function createReplicationDocument(
   continuous: boolean = true,
   create_target: boolean = true,
   selector?: object,
+  authHeader?: string
 ): ReplicationDocument {
+  const sourceHost = new URL(source).host.replace(/[.:]/g, '_');
+  const targetHost = new URL(target).host.replace(/[.:]/g, '_');
+
   const replicationDoc: ReplicationDocument = {
-    source: source,
-    target: target,
+    _id: `repl_${sourceHost}_to_${targetHost}`,
+    source: {
+      url: source,
+      headers: {
+        Authorization: authHeader || "Basic YWRtaW46cGFzc3dvcmQ=" // admin:password base64
+      }
+    },
+    target: {
+      url: target,
+      headers: {
+        Authorization: authHeader || "Basic YWRtaW46cGFzc3dvcmQ="
+      }
+    },
+    // source: source,
+    // target: target,
     continuous,
     create_target,
   };

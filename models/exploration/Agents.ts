@@ -41,7 +41,9 @@ export class Agent extends rclnodejs.Node {
   // ROS Callbacks
 
   replicationSubCallback(msg: any): void {
-    if (isMapUpdate(msg)) this.updateLocalMap(msg);
+    if (isMapUpdate(msg)){
+      this.updateLocalMap(msg);
+    } 
     else wrongTypeLog(this.replicationSubCallback.name, msg);
   }
 

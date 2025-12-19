@@ -94,6 +94,9 @@ export class CouchManager extends rclnodejs.Node {
       since: "now",
       onChange: couchManager.createOnChangeHandler.bind(couchManager),
     });
+    couchManager.changeListener.start().catch((error) => {
+      console.error("CouchDB Change Listener error:", error);
+    });
 
     return couchManager;
   }
@@ -107,11 +110,16 @@ export class CouchManager extends rclnodejs.Node {
    * @param msg - ROS message containing the agent position
    */
   async posSubCallback(msg: any): Promise<void> {
-    if (isPoint(msg))
-      await this.saveDocsInBatches([
-        fromPointToAgentDocument(msg, this.nameOfAgent),
-      ]);
-    else wrongTypeLog(this.posSubCallback.name, msg);
+    if (isPoint(msg)) {
+      const doc = fromPointToAgentDocument(msg, this.nameOfAgent);
+
+      doc.meta = {
+        source: this.nameOfAgent,
+        created_at: new Date().toISOString(),
+      };
+
+      await this.saveDocsInBatches([doc]);
+    } else wrongTypeLog(this.posSubCallback.name, msg);
   }
 
   /**
@@ -120,8 +128,16 @@ export class CouchManager extends rclnodejs.Node {
    * @returns {Promise<void>}
    */
   async mapSubCallback(msg: any): Promise<void> {
-    if (isMapUpdate(msg))
-      await this.saveDocsInBatches(fromMapUpdateToCellDocumentArray(msg));
+    if (isMapUpdate(msg)) {
+      const cellDocs = fromMapUpdateToCellDocumentArray(msg);
+      cellDocs.forEach((doc) => {
+        doc.meta = {
+          source: this.nameOfAgent,
+          created_at: new Date().toISOString(),
+        };
+      });
+      await this.saveDocsInBatches(cellDocs);
+    }
     // await this.saveDocsInBatches(fromUint8ArrayToCellDocumentArray(msg.data));
     else wrongTypeLog(this.mapSubCallback.name, msg);
   }
@@ -342,7 +358,7 @@ export class CouchManager extends rclnodejs.Node {
   /**
    * Create the _replicator db if it doesn't exist and post the replication documents to each hosts
    * @param pathToHosts Path to the JSON file containing the hosts configuration
-   * @returns 
+   * @returns
    */
   async createReplicators(pathToHosts: string): Promise<void> {
     try {
@@ -359,7 +375,8 @@ export class CouchManager extends rclnodejs.Node {
               hostUrl,
               true,
               true,
-              defaultSelector()
+              defaultSelector(),
+              this.authHeader
             )
           );
         }
@@ -394,6 +411,21 @@ export class CouchManager extends rclnodejs.Node {
       await new Promise((resolve) => setTimeout(resolve, 500));
       for (const doc of replDocs) {
         try {
+          const existingDocRes = await fetch(
+            `${replicatorDbUrl}/${encodeURIComponent(doc._id)}`,
+            {
+              method: "GET",
+              headers: this.prepareHeader(),
+            }
+          );
+
+          if (existingDocRes.ok) {
+            console.log(
+              `Replication document for target ${doc.target.toString()} already exists, skipping...`
+            );
+            continue;
+          }
+
           const response = await fetch(`${replicatorDbUrl}`, {
             method: "POST",
             headers: this.prepareHeader(CouchManager.contentTypeJson),
@@ -416,7 +448,7 @@ export class CouchManager extends rclnodejs.Node {
             error
           );
         }
-      };
+      }
       console.log("Replication documents creation completed.");
     } catch (error) {
       console.error("Error parsing CouchDB hosts config file:", error);
@@ -553,9 +585,11 @@ export class CouchManager extends rclnodejs.Node {
 
   createOnChangeHandler(change: any) {
     const doc = change.doc;
-    if (doc?._meta?.source) {
-      // this.replPublisher?.publish(doc._meta.source, doc);
-      // this.replPublisher?.publish(fromCellDocumentToUint8(doc));
+    // console.log("Change detected:", doc);
+    if (doc && doc.meta && doc.meta.source) {
+      if(doc.meta.source === this.nameOfAgent) {
+        return;
+      }
       this.replPublisher?.publish({
         cells: [fromCellDocumentToCell(doc)],
       } as MapUpdate);
