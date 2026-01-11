@@ -10,7 +10,6 @@
 You need to have NodeJS and npm installed with the global following packages :
 
 ```
-
 npm i --globally typescript
 
 ```
@@ -58,7 +57,9 @@ If you don't have them, you need to create a ros2 package inside your ros2 works
 ros2 pkg create --build-type ament_cmake node_pkg
 mkdir node_pkg/msg
 cd node_pkg/msg
-echo "int32 x\n int32 y \n int8 value" > ./Cell.msg
+echo "int32 x
+int32 y
+int8 value" > ./Cell.msg
 echo "Cell[] cells" > ./MapUpdate.msg
 ```
 
